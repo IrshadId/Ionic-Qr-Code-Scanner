@@ -1,42 +1,70 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-title>
-      Ionic QR Scanner
+      Ionic QR Code Generator & Scanner
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <!-- Fallback for iOS PWA -->
-  <!-- <input #fileinput type="file" accept="image/*;capture=camera" hidden (change)="handleFile($event.target.files)"> -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Generate QR Code</ion-card-title>
+    </ion-card-header>
 
-  <!-- Trigger the file input -->
-  <!-- <ion-button expand="full" (click)="captureImage()">
-    <ion-icon slot="start" name="camera"></ion-icon>
-    Capture Image
-  </ion-button> -->
+    <ion-card-content class="qr-generator-container">
+      <ion-item>
+        <ion-label position="stacked">Enter URL:</ion-label>
+        <ion-input [(ngModel)]="qrData" type="url" placeholder="https://example.com"></ion-input>
+      </ion-item>
 
-  <ion-button expand="full" (click)="startScan()">
-    <ion-icon slot="start" name="qr-scanner"></ion-icon>
-    Start scan
-  </ion-button>
+      <ion-item *ngIf="qrError">
+        <ion-label color="danger" position="stacked">{{ qrError }}</ion-label>
+      </ion-item>
 
-  <ion-button expand="full" (click)="reset()" color="warning" *ngIf="scanResult">
-    <ion-icon slot="start" name="refresh"></ion-icon>
-    Reset
-  </ion-button>
+      <ion-button expandBlock expand="block" fill="outline" (click)="generateQR()">Generate</ion-button>
+    </ion-card-content>
+  </ion-card>
+  <div *ngIf="qrLoaded">
+    <ion-card class="qr-generator-container">
+      <qrcode [qrdata]="qrData" [allowEmptyString]="true" [ariaLabel]="'QR Code image with the following content...'"
+        [cssClass]="'center'" [colorDark]="'#000000ff'" [colorLight]="'#ffffffff'" [elementType]="'canvas'"
+        [errorCorrectionLevel]="'M'" [margin]="4" [scale]="1" [title]="'A custom title attribute'" [width]="300">
+      </qrcode>
+    </ion-card>
+  </div>
 
-  <!-- Shows our camera stream -->
-  <video #video [hidden]="!scanActive" width="100%"></video>
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Scan Qr-Code</ion-card-title>
+    </ion-card-header>
 
-  <!-- Used to render the camera stream images -->
-  <canvas #canvas hidden></canvas>
+    <ion-card-content class="qr-generator-container">
+      <ion-button expand="block" fill="outline" (click)="startScan()">
+        <ion-icon slot="start" name="qr-scanner"></ion-icon>
+        Start scan
+      </ion-button>
 
-  <!-- Stop our scanner preview if active -->
-  <ion-button expand="full" (click)="stopScan()" color="danger" *ngIf="scanActive">
-    <ion-icon slot="start" name="close"></ion-icon>
-    Stop scan
-  </ion-button>
+      <ion-button expand="block" fill="outline" (click)="reset()" color="warning" *ngIf="scanResult">
+        <ion-icon slot="start" name="refresh"></ion-icon>
+        Reset
+      </ion-button>
+      <!-- Shows our camera stream -->
+      <video #video [hidden]="!scanActive" width="100%"></video>
+
+      <!-- Used to render the camera stream images -->
+      <canvas #canvas hidden></canvas>
+
+      <!-- Stop our scanner preview if active -->
+      <ion-button expand="block" fill="outline" (click)="stopScan()" color="danger" *ngIf="scanActive">
+        <ion-icon slot="start" name="close"></ion-icon>
+        Stop scan
+      </ion-button>
+
+    </ion-card-content>
+  </ion-card>
+
+
 
   <ion-card *ngIf="scanResult">
     <ion-card-header>

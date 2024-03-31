@@ -16,9 +16,11 @@ export class HomePage {
   videoElement: any;
   canvasContext: any;
   scanActive = false;
-  scanResult:any = null;
-  loading:any = null;
-
+  scanResult: any = null;
+  loading: any = null;
+  qrData: any;
+  qrError: any;
+  qrLoaded: boolean = false;
   constructor(
     private toastCtrl: ToastController,
     private loadingCtrl: LoadingController,
@@ -28,8 +30,11 @@ export class HomePage {
       'standalone' in window.navigator && window.navigator['standalone'];
     if (this.plt.is('ios') && isInStandaloneMode()) {
       console.log('I am a an iOS PWA!');
-      // E.g. hide the scan functionality!
     }
+  }
+
+  ngOnInit() {
+    this.qrData = '';  // Initialize qrData
   }
 
   ngAfterViewInit() {
@@ -38,6 +43,15 @@ export class HomePage {
     this.videoElement = this.video.nativeElement;
   }
 
+  generateQR() {
+    if (this.qrData.length === 0) {
+      this.qrError = 'Please enter a URL.';
+      return;
+    }
+
+    this.qrError = '';  // Clear any previous errors
+    this.qrLoaded = true;
+  }
   // Helper functions
   async showQrToast() {
     const toast = await this.toastCtrl.create({
@@ -68,18 +82,18 @@ export class HomePage {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment' }
     });
-  
+
     this.videoElement.srcObject = stream;
     // Required for Safari
     this.videoElement.setAttribute('playsinline', true);
-  
+
     this.loading = await this.loadingCtrl.create({});
     await this.loading.present();
-  
+
     this.videoElement.play();
     requestAnimationFrame(this.scan.bind(this));
   }
-  
+
   async scan() {
     if (this.videoElement.readyState === this.videoElement.HAVE_ENOUGH_DATA) {
       if (this.loading) {
@@ -87,10 +101,10 @@ export class HomePage {
         this.loading = null;
         this.scanActive = true;
       }
-  
+
       this.canvasElement.height = this.videoElement.videoHeight;
       this.canvasElement.width = this.videoElement.videoWidth;
-  
+
       this.canvasContext.drawImage(
         this.videoElement,
         0,
@@ -107,7 +121,7 @@ export class HomePage {
       const code = jsQR(imageData.data, imageData.width, imageData.height, {
         inversionAttempts: 'dontInvert'
       });
-  
+
       if (code) {
         this.scanActive = false;
         this.scanResult = code.data;
@@ -125,10 +139,10 @@ export class HomePage {
   // captureImage() {
   //   this.fileinput.nativeElement.click();
   // }
-  
+
   handleFile(files: FileList) {
-    const file:any = files.item(0);
-  
+    const file: any = files.item(0);
+
     var img = new Image();
     img.onload = () => {
       this.canvasContext.drawImage(img, 0, 0, this.canvasElement.width, this.canvasElement.height);
@@ -141,7 +155,7 @@ export class HomePage {
       const code = jsQR(imageData.data, imageData.width, imageData.height, {
         inversionAttempts: 'dontInvert'
       });
-  
+
       if (code) {
         this.scanResult = code.data;
         this.showQrToast();
