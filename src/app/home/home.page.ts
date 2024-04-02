@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ToastController, LoadingController, Platform } from '@ionic/angular';
 import jsQR from 'jsqr';
-
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -134,5 +134,51 @@ export class HomePage {
       requestAnimationFrame(this.scan.bind(this));
     }
   }
+
+
+ 
+
+async pickImageFromGallery() {
+  const image:any = await Camera.getPhoto({
+    quality: 90,
+    allowEditing: false,
+    resultType: CameraResultType.Uri,
+    source: CameraSource.Photos,
+  });
+  console.log(image);
+  
+   if (image) {
+    this.scanQRCode(image.webPath); // Call the scanQRCode method with image data
+  }
+  
+}
+
+scanQRCode(dataUrl: string) {
+  const img = new Image();
+  img.src = dataUrl;
+  console.log(img);
+  
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const context:any = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    context.drawImage(img, 0, 0);
+
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const code = jsQR(imageData, canvas.width, canvas.height);
+    console.log(canvas);
+    
+    if (code) {
+      this.scanActive = false;
+      this.scanResult = code.data;
+      this.showQrToast();
+    } else {
+      console.log('No QR code found in image.');
+      alert('No QR code detected in the image.');
+    }
+  };
+}
+
 
 }

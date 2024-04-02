@@ -44,6 +44,9 @@
         <ion-icon slot="start" name="qr-scanner"></ion-icon>
         Start scan
       </ion-button>
+      <ion-button expand="block" fill="outline" (click)="pickImageFromGallery()">
+        Pick Image
+      </ion-button>
       <ion-button expand="block" fill="outline" (click)="reset()" color="warning" *ngIf="scanResult">
         <ion-icon slot="start" name="refresh"></ion-icon>
         Reset
